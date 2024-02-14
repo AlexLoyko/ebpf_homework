@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+from bcc import BPF
+from time import sleep
+import argparse
+
+parser = argparse.ArgumentParser(
+    description="Summarize block device request I/O latency as a histogram",
+    formatter_class=argparse.RawDescriptionHelpFormatter)
+
+parser.add_argument("interval", nargs="?", default=None,
+    help="output interval, in seconds")
+args = parser.parse_args()
+
+if not args.interval:
+    print("ERROR: Must provide the interval in seconds as the only argument.\n Example usage: ./iolatency 5")
+    exit()
+
+output_interval_sec = int(args.interval)
+
+b = BPF(src_file='./iolatency.bpf.c')
+b.attach_tracepoint(tp="block:block_rq_issue", fn_name="handle_block_rq_issue")
+b.attach_tracepoint(tp="block:block_rq_complete", fn_name="handle_block_rq_complete")
+
+# header
+print("Tracing... Hit Ctrl-C to end.")
+
+block_io_latencies = b.get_table("block_io_latencies")
+
+while (1):
+    try:
+        sleep(output_interval_sec)
+
+        print('-----------------------------------------------------------------------------')
+        block_io_latencies.print_log2_hist("usecs")
+        block_io_latencies.clear()
+        print('-----------------------------------------------------------------------------')
+    except KeyboardInterrupt:
+        exit()
+    
