@@ -2,7 +2,7 @@
 Homework for EECS 6891
 
 ## Background
-My homework implementation is likely not tradinitional.
+My homework implementation is likely not traditional.
 I've started with libbpf and implementing both parts in C, but realized that there were 
 a series of parts that had nothing to do with eBPF, though had to be implemented (histogram handling is only possible through an array and custom parsing and printing). Given that the homework instructions didn't apply restrictions on the technology of use, I've decided to utilize BCC, which, in my honest opinion, is a much better tool for the job due to its conciseness.
 
